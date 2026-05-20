@@ -4,7 +4,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class Capitulo7_Shingu_Completo {
+public class Shingu Coffee_codigo.java {
 
     static String[][] productos;
     static String ventas[][];
