@@ -1,6 +1,6 @@
 using System;
 
-public class Capitulo7_Shingu_Completo
+public class Shingu Coffee_codigoC#
 {
     static string[,] productos;
     static string[,] ventas;
