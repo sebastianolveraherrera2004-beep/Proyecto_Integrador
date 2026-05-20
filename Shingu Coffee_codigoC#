@@ -1,0 +1,683 @@
+using System;
+
+public class Capitulo7_Shingu_Completo
+{
+    static string[,] productos;
+    static string[,] ventas;
+    static int tamventas = 100;
+
+    public static string MostrarMenu(string[] opciones)
+    {
+        string cadena = "";
+        foreach (string info in opciones)
+        {
+            cadena = cadena + info + "\n";
+        }
+        return cadena;
+    }
+
+    public static bool EsNumeroEntero(string dato)
+    {
+        if (dato == null || dato.Trim().Length == 0) return false;
+        foreach (char c in dato)
+        {
+            if (!Char.IsDigit(c)) return false;
+        }
+        return true;
+    }
+
+    public static bool EsNumeroDouble(string dato)
+    {
+        if (dato == null || dato.Trim().Length == 0) return false;
+        bool punto = false;
+        bool digito = false;
+        foreach (char c in dato)
+        {
+            if (Char.IsDigit(c))
+            {
+                digito = true;
+            }
+            else if (c == '.' && !punto)
+            {
+                punto = true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        return digito;
+    }
+
+    public static bool EvaluarNumerico(string dato, int tipo)
+    {
+        bool valido = false;
+        switch (tipo)
+        {
+            case 1:
+                valido = EsNumeroEntero(dato);
+                break;
+            case 2:
+                valido = EsNumeroDouble(dato);
+                break;
+        }
+        return valido;
+    }
+
+    public static string Dialogo(string texto)
+    {
+        Console.WriteLine(texto + " : ");
+        return Console.ReadLine();
+    }
+
+    public static string Leer(string texto)
+    {
+        string cadena = Dialogo(texto);
+        if (cadena != null)
+        {
+            cadena = cadena.Trim();
+            if (cadena.Length == 0) cadena = null;
+        }
+        return cadena;
+    }
+
+    public static string LeerValidado(string texto_dialogo, int tipo_dato)
+    {
+        string cadena;
+        do
+        {
+            cadena = Dialogo(texto_dialogo);
+            if (cadena != null) cadena = cadena.Trim();
+
+            if (cadena != null && cadena.Length > 0 && EvaluarNumerico(cadena, tipo_dato))
+            {
+                return cadena;
+            }
+            else
+            {
+                Console.WriteLine("Dato incorrecto. Intente nuevamente.");
+            }
+        } while (true);
+    }
+
+    public static string DesplegarMenu(string Titulo1, string[] menu)
+    {
+        string cadena = Titulo1 + "\n\n";
+        cadena = cadena + MostrarMenu(menu);
+        cadena = cadena + "\n Que opcion deseas ";
+        return Dialogo(cadena);
+    }
+
+    public static string RellenarEspacios(string dato, int tamano)
+    {
+        if (dato == null) dato = "";
+        return dato.PadRight(tamano);
+    }
+
+    public static string Fecha()
+    {
+        return DateTime.Now.ToString("dd-MM-yyyy");
+    }
+
+    public static string IdTicketSiguiente(string idticket)
+    {
+        int num = int.Parse(idticket) + 1;
+        if (num < 10) return "00" + num.ToString().Trim();
+        else if (num > 9 && num < 100) return "0" + num.ToString().Trim();
+        else return num.ToString().Trim();
+    }
+
+    public static int ObtenerUltimaPosicion(string[,] matriz)
+    {
+        int ultimaPosicion = -1;
+        for (int i = 0; i < matriz.GetLength(0); i++)
+        {
+            if (matriz[i, 0] != null && matriz[i, 0] != "")
+            {
+                ultimaPosicion = i;
+            }
+        }
+        return ultimaPosicion;
+    }
+
+    public static string[,] CargarProductos()
+    {
+        string[,] producto = {
+            { "001", "Espresso", "45", "10", "16" },
+            { "002", "Americano", "50", "10", "16" },
+            { "003", "Cappuccino", "65", "10", "16" },
+            { "004", "Latte", "68", "10", "16" },
+            { "005", "Mocha", "72", "10", "16" },
+            { "006", "Flat White", "70", "10", "16" },
+            { "007", "Caramel Macchiato", "78", "10", "16" },
+            { "008", "Cold Brew", "75", "10", "16" },
+            { "009", "Frappe de Cafe", "82", "10", "16" },
+            { "010", "Affogato", "80", "10", "16" },
+            { "011", "Chocolate Caliente", "60", "10", "16" },
+            { "012", "Te Chai Latte", "70", "10", "16" },
+            { "013", "Matcha Latte", "76", "10", "16" },
+            { "014", "Tisana Frutal", "58", "10", "0" },
+            { "015", "Croissant Mantequilla", "42", "10", "0" },
+            { "016", "Panini Jamon y Queso", "85", "10", "0" },
+            { "017", "Bagel con Queso Crema", "55", "10", "0" },
+            { "018", "Cheesecake Rebanada", "68", "10", "0" },
+            { "019", "Brownie", "48", "10", "0" },
+            { "020", "Galletas Artesanales", "40", "10", "0" }
+        };
+        return producto;
+    }
+
+    public static string MostrarProducto(string[] vproducto)
+    {
+        string codigo = RellenarEspacios(vproducto[0], 5);
+        string producto = RellenarEspacios(vproducto[1], 30);
+        string precio = RellenarEspacios(vproducto[2], 10);
+        string cantidad = RellenarEspacios(vproducto[3], 10);
+        string iva = vproducto.Length > 4 ? RellenarEspacios(vproducto[4], 10) : "";
+        return codigo + producto + precio + cantidad + iva;
+    }
+
+    public static string MostrarLista(string[,] vproductos)
+    {
+        string salida = "Codigo Producto                      Precio    Cantidad  IVA %\n";
+        for (int ciclo = 0; ciclo < vproductos.GetLength(0); ciclo++)
+        {
+            string[] vproducto = { vproductos[ciclo, 0], vproductos[ciclo, 1], vproductos[ciclo, 2], vproductos[ciclo, 3], vproductos[ciclo, 4] };
+            salida = salida + MostrarProducto(vproducto) + "\n";
+        }
+        return salida;
+    }
+
+    public static int ExisteProducto(string codigo, string[,] vproductos)
+    {
+        int enc = -1;
+        int pos = 0;
+        int tam = vproductos.GetLength(0);
+        for (int ciclo = 0; ciclo < tam; ciclo++)
+        {
+            if (vproductos[ciclo, 0].CompareTo(codigo.Trim()) == 0) enc = pos;
+            pos++;
+        }
+        return enc;
+    }
+
+    public static double ObtenerIva(string codigo, string[,] vproductos)
+    {
+        int pos = ExisteProducto(codigo, vproductos);
+        if (pos > -1) return double.Parse(vproductos[pos, 4]);
+        return 0;
+    }
+
+    public static int DescontarStock(string[,] mproductos, string codigo, int cantidad)
+    {
+        int posp = ExisteProducto(codigo.Trim(), mproductos);
+        if (posp == -1) return -2;
+        int stock = int.Parse(mproductos[posp, 3]);
+        if (stock == 0) return 0;
+        if (cantidad > stock) return -1;
+        mproductos[posp, 3] = (stock - cantidad).ToString();
+        return 1;
+    }
+
+    public static void ModificarProducto(string[,] vproductos)
+    {
+        string info = MostrarLista(vproductos);
+        string codigo = Leer(info + "\nIntroduce el codigo del producto a modificar");
+        if (codigo != null)
+        {
+            int posicion = ExisteProducto(codigo, vproductos);
+            if (posicion > -1)
+            {
+                string[] vproducto = { vproductos[posicion, 0], vproductos[posicion, 1], vproductos[posicion, 2], vproductos[posicion, 3], vproductos[posicion, 4] };
+                string precio = LeerValidado("\nIntroduce el precio de " + MostrarProducto(vproducto) + " ", 2);
+                vproductos[posicion, 2] = precio;
+                Console.WriteLine("Precio actualizado correctamente.");
+            }
+            else Console.WriteLine("no existe el codigo");
+        }
+        else Console.WriteLine(" dato nulo");
+    }
+
+    public static void MenuProductos(string[,] vproductos)
+    {
+        string[] datosmenuproductos = { "1.-Modificar ", "2.-Listado ", "3.-Salida " };
+        string opcion = "0";
+        do
+        {
+            opcion = DesplegarMenu("Opciones de Productos", datosmenuproductos);
+            if (opcion == null) Console.WriteLine("opcion incorrecta ");
+            else
+            {
+                switch (opcion)
+                {
+                    case "1": ModificarProducto(vproductos); break;
+                    case "2": Console.WriteLine(MostrarLista(vproductos)); break;
+                    case "3": Console.WriteLine("Salida del Sistema "); break;
+                    default: Console.WriteLine("No existe esta opcion "); break;
+                }
+            }
+        } while (opcion.CompareTo("3") != 0);
+    }
+
+    public static string[,] CrearVenta()
+    {
+        return new string[tamventas, 5];
+    }
+
+    public static string[,] CrearTicket()
+    {
+        return new string[20, 4];
+    }
+
+    public static int ExisteTicketCodigo(string[,] mticket, string codigo)
+    {
+        int enc = -1;
+        int pos = ObtenerUltimaPosicion(mticket);
+        for (int ciclo = 0; ciclo <= pos; ciclo++)
+        {
+            if (mticket[ciclo, 0].CompareTo(codigo.Trim()) == 0)
+            {
+                enc = ciclo;
+                return enc;
+            }
+        }
+        return enc;
+    }
+
+    public static bool InsertarProductoTicket(string[,] mticket, string[] datos, int tamticket)
+    {
+        bool sucedio = true;
+        int posticket = ObtenerUltimaPosicion(mticket);
+        int enc = ExisteTicketCodigo(mticket, datos[0]);
+        if (posticket < tamticket - 1)
+        {
+            if (enc > -1)
+            {
+                int cantidadactual = int.Parse(mticket[enc, 3]);
+                mticket[enc, 3] = (cantidadactual + 1).ToString();
+            }
+            else
+            {
+                posticket++;
+                mticket[posticket, 0] = datos[0];
+                mticket[posticket, 1] = datos[1];
+                mticket[posticket, 2] = datos[2];
+                mticket[posticket, 3] = datos[3];
+                Console.WriteLine("Producto agregado al ticket.");
+            }
+        }
+        else sucedio = false;
+        return sucedio;
+    }
+
+    public static string TotalProducto(string precio, string cantidad)
+    {
+        double total = double.Parse(precio) * double.Parse(cantidad);
+        return total.ToString("0.00");
+    }
+
+    public static string MostrarProductoTicket(string[,] mticket, int pos)
+    {
+        string codigo = RellenarEspacios(mticket[pos, 0], 5);
+        string producto = RellenarEspacios(mticket[pos, 1], 30);
+        string precio = RellenarEspacios(mticket[pos, 2], 10);
+        string cantidad = RellenarEspacios(mticket[pos, 3], 5);
+        string totalproducto = RellenarEspacios(TotalProducto(mticket[pos, 2], mticket[pos, 3]), 10);
+        return codigo + producto + precio + cantidad + totalproducto;
+    }
+
+    public static string MostrarTicket(string[,] mticket)
+    {
+        string salida = "Codigo Producto                      Precio    Cant. Total\n";
+        int pos = ObtenerUltimaPosicion(mticket);
+        if (pos == -1) return "";
+        for (int ciclo = 0; ciclo <= pos; ciclo++) salida += MostrarProductoTicket(mticket, ciclo) + "\n";
+        return salida;
+    }
+
+    public static double SubTotalTicket(string[,] mticket)
+    {
+        double subtotal = 0;
+        int pos = ObtenerUltimaPosicion(mticket);
+        for (int ciclo = 0; ciclo <= pos; ciclo++) subtotal += double.Parse(TotalProducto(mticket[ciclo, 2], mticket[ciclo, 3]));
+        return subtotal;
+    }
+
+    public static double IvaTicket(string[,] mticket, string[,] mproductos)
+    {
+        double ivatotal = 0;
+        int pos = ObtenerUltimaPosicion(mticket);
+        for (int ciclo = 0; ciclo <= pos; ciclo++)
+        {
+            string codigo = mticket[ciclo, 0];
+            double iva = ObtenerIva(codigo, mproductos);
+            if (iva != 0)
+            {
+                double precio = double.Parse(mticket[ciclo, 2]);
+                double cantidad = double.Parse(mticket[ciclo, 3]);
+                ivatotal += ((precio * cantidad) * (iva / 100));
+            }
+        }
+        return ivatotal;
+    }
+
+    public static double TotalTicket(string[,] mticket, string[,] mproductos)
+    {
+        double total = SubTotalTicket(mticket);
+        if (total > 0) total = IvaTicket(mticket, mproductos) + total;
+        return total;
+    }
+
+    public static string MostrarTicketVenta(string[,] mticket, string idticket, string fecha, string[,] mproductos)
+    {
+        string subtotal = SubTotalTicket(mticket).ToString("0.00");
+        string iva = IvaTicket(mticket, mproductos).ToString("0.00");
+        string total = TotalTicket(mticket, mproductos).ToString("0.00");
+        string salida = "Fecha " + fecha + " Ticket No. " + idticket;
+        salida += "\n" + MostrarTicket(mticket);
+        salida += "\nEl total sin iva " + subtotal;
+        salida += "\nEl iva total es " + iva;
+        salida += "\nEl total de la venta fue " + total;
+        return salida;
+    }
+
+    public static string MostrarListaProductosVenta(string[,] vproductos)
+    {
+        string salida = "Codigo Producto                      Precio    Cantidad  IVA %\n";
+        for (int ciclo = 0; ciclo < vproductos.GetLength(0); ciclo++)
+        {
+            int existencia = int.Parse(vproductos[ciclo, 3]);
+            if (existencia > 0)
+            {
+                string[] vproducto = { vproductos[ciclo, 0], vproductos[ciclo, 1], vproductos[ciclo, 2], vproductos[ciclo, 3], vproductos[ciclo, 4] };
+                salida += MostrarProducto(vproducto) + "\n";
+            }
+        }
+        return salida;
+    }
+
+    public static void CapturaVentaProducto(string[,] mticket, string[,] mproductos, string idticket, int tamticket)
+    {
+        string info = MostrarListaProductosVenta(mproductos);
+        string codigo = Leer(info + "\nIntroduce el codigo del producto");
+        if (codigo != null)
+        {
+            int posp = ExisteProducto(codigo.Trim(), mproductos);
+            if (posp > -1)
+            {
+                int resultado = DescontarStock(mproductos, codigo.Trim(), 1);
+                if (resultado == 1)
+                {
+                    string[] venta = { mproductos[posp, 0], mproductos[posp, 1], mproductos[posp, 2], "1" };
+                    if (!InsertarProductoTicket(mticket, venta, tamticket))
+                    {
+                        Console.WriteLine("el Arreglo esta lleno \n");
+                        DevolverProductoInventario(mproductos, codigo.Trim(), 1);
+                    }
+                }
+                else if (resultado == -1) Console.WriteLine("la cantidad es mayor al stock disponible");
+                else if (resultado == 0) Console.WriteLine("no hay productos para venta");
+                else if (resultado == -2) Console.WriteLine("el codigo no existe no se puede agregar");
+            }
+            else Console.WriteLine("el codigo no existe no se puede agregar\n");
+        }
+        else Console.WriteLine("dato nulo\n");
+    }
+
+    public static void DevolverProductoInventario(string[,] mproductos, string codigo, int cantidad)
+    {
+        int posproducto = ExisteProducto(codigo, mproductos);
+        if (posproducto > -1)
+        {
+            int nuevacantidad = int.Parse(mproductos[posproducto, 3]) + cantidad;
+            mproductos[posproducto, 3] = nuevacantidad.ToString();
+        }
+    }
+
+    public static void RemoverProductoTicket(string[,] mticket, int pos)
+    {
+        int tam = ObtenerUltimaPosicion(mticket);
+        if (tam > pos)
+        {
+            for (int i = pos; i < tam; i++)
+            {
+                for (int j = 0; j < 4; j++) mticket[i, j] = mticket[i + 1, j];
+            }
+        }
+        for (int j = 0; j < 4; j++) mticket[tam, j] = null;
+    }
+
+    public static void EliminarProductoTicket(string[,] mticket, int pos)
+    {
+        int cantidad = int.Parse(mticket[pos, 3]);
+        if (cantidad > 1) mticket[pos, 3] = (cantidad - 1).ToString();
+        else RemoverProductoTicket(mticket, pos);
+    }
+
+    public static void Eliminar(string[,] mticket, string[,] mproductos)
+    {
+        string info = MostrarTicket(mticket);
+        if (info.Trim().Length == 0)
+        {
+            Console.WriteLine("El ticket esta vacio");
+            return;
+        }
+        string codigo = Leer(info + "\nIntroduce el codigo del producto");
+        if (codigo != null)
+        {
+            int pos = ExisteTicketCodigo(mticket, codigo);
+            if (pos > -1)
+            {
+                DevolverProductoInventario(mproductos, codigo.Trim(), 1);
+                EliminarProductoTicket(mticket, pos);
+                Console.WriteLine("Producto eliminado del ticket.");
+            }
+            else Console.WriteLine("El codigo no existe en el ticket.");
+        }
+        else Console.WriteLine("dato nulo");
+    }
+
+    public static void AgregarProductoAVenta(string[,] mticket, string[,] mventa, string idticket)
+    {
+        int posventas = ObtenerUltimaPosicion(mventa);
+        int posticket = ObtenerUltimaPosicion(mticket);
+        for (int i = 0; i <= posticket; i++)
+        {
+            if (mticket[i, 0] != null)
+            {
+                posventas++;
+                mventa[posventas, 0] = idticket;
+                mventa[posventas, 1] = mticket[i, 0];
+                mventa[posventas, 2] = mticket[i, 1];
+                mventa[posventas, 3] = mticket[i, 2];
+                mventa[posventas, 4] = mticket[i, 3];
+            }
+        }
+    }
+
+    public static void Pagar(string idticket, string[,] mventa, string[,] mticket)
+    {
+        int posventas = ObtenerUltimaPosicion(mventa);
+        int post = ObtenerUltimaPosicion(mticket);
+        if (post == -1)
+        {
+            Console.WriteLine("No hay productos en el ticket para pagar.");
+            return;
+        }
+        if ((posventas + post) < tamventas) AgregarProductoAVenta(mticket, mventa, idticket);
+        else Console.WriteLine("Desbordamiento de Memoria de ventas");
+    }
+
+    public static void DevolucionTicket(string[,] mticket, string[,] mproductos)
+    {
+        int posmticket = ObtenerUltimaPosicion(mticket);
+        for (int pos = 0; pos <= posmticket; pos++)
+        {
+            string codigo = mticket[pos, 0];
+            int cantidad = int.Parse(mticket[pos, 3]);
+            DevolverProductoInventario(mproductos, codigo.Trim(), cantidad);
+        }
+    }
+
+    public static void CancelarVenta(string[,] mticket, string[,] mproductos)
+    {
+        DevolucionTicket(mticket, mproductos);
+        for (int i = 0; i < mticket.GetLength(0); i++)
+        {
+            for (int j = 0; j < mticket.GetLength(1); j++) mticket[i, j] = null;
+        }
+        Console.WriteLine("Venta cancelada. Productos devueltos al inventario y ticket limpiado.");
+    }
+
+    public static void MenuPuntoVenta(string[,] ventas, string idticket, string[,] productos)
+    {
+        string opcion;
+        bool pago = false;
+        int tamticket = 50;
+        string[,] Vticket = new string[tamticket, 4];
+        idticket = IdTicketSiguiente(idticket);
+        string fechadia = Fecha();
+        opcion = "";
+        do
+        {
+            string membrete = "Fecha del Dia " + fechadia + " Ticket No " + idticket;
+            membrete += "\n-----------------------------------------------------\n";
+            string Tickettexto = MostrarTicket(Vticket).Trim();
+            if (Tickettexto.Length > 0) membrete += "\n" + Tickettexto + "\n";
+            string[] datosmenu = { "1.-Agregar  ", "2.-Eliminar ", "3.-Listado ", "4.-Pagar ", "5.-Salida " };
+            opcion = DesplegarMenu(membrete + "\n Menu de Punto de Venta", datosmenu);
+            if (opcion == null) Console.WriteLine("dato incorrecto introducido");
+            else
+            {
+                switch (opcion)
+                {
+                    case "1": CapturaVentaProducto(Vticket, productos, idticket, tamticket); break;
+                    case "2": Eliminar(Vticket, productos); break;
+                    case "3":
+                        if (ObtenerUltimaPosicion(Vticket) > -1) Console.WriteLine(MostrarTicket(Vticket));
+                        else Console.WriteLine("El ticket esta vacio.");
+                        break;
+                    case "4":
+                        if (ObtenerUltimaPosicion(Vticket) > -1)
+                        {
+                            Console.WriteLine(MostrarTicketVenta(Vticket, idticket, fechadia, productos).Trim());
+                            Pagar(idticket, ventas, Vticket);
+                            pago = true;
+                            opcion = "5";
+                        }
+                        else Console.WriteLine("No hay productos en el ticket para pagar.");
+                        break;
+                    case "5":
+                        Console.WriteLine("Salida del Ventas ");
+                        if (!pago && ObtenerUltimaPosicion(Vticket) > -1) CancelarVenta(Vticket, productos);
+                        break;
+                    default: Console.WriteLine("No existe esta opcion"); break;
+                }
+            }
+        } while (opcion.CompareTo("5") != 0);
+    }
+
+    public static string MostrarVenta(string[] venta)
+    {
+        string idticket = RellenarEspacios(venta[0], 6);
+        string codigo = RellenarEspacios(venta[1], 5);
+        string producto = RellenarEspacios(venta[2], 30);
+        string precio = RellenarEspacios(venta[3], 10);
+        string cantidad = RellenarEspacios(venta[4], 10);
+        return idticket + codigo + producto + precio + cantidad;
+    }
+
+    public static string MostrarListaVentas(string[,] ventas)
+    {
+        int posventas = ObtenerUltimaPosicion(ventas);
+        string salida = "ID    Codigo Producto                      Precio    Cantidad\n";
+        if (posventas == -1) return "No hay ventas registradas.\n";
+        for (int ciclo = 0; ciclo <= posventas; ciclo++)
+        {
+            string[] venta = { ventas[ciclo, 0], ventas[ciclo, 1], ventas[ciclo, 2], ventas[ciclo, 3], ventas[ciclo, 4] };
+            salida += MostrarVenta(venta) + "\n";
+        }
+        return salida;
+    }
+
+    public static void AgregarStock(string[,] vproductos)
+    {
+        string info = MostrarLista(vproductos);
+        string codigo = Leer(info + "\nIntroduce el codigo del producto a modificar");
+        if (codigo != null)
+        {
+            int posicion = ExisteProducto(codigo, vproductos);
+            if (posicion > -1)
+            {
+                string[] vproducto = { vproductos[posicion, 0], vproductos[posicion, 1], vproductos[posicion, 2], vproductos[posicion, 3], vproductos[posicion, 4] };
+                string cantidad = LeerValidado("\nIntroduce la Cantidad de Stock a Agregar " + MostrarProducto(vproducto), 1);
+                string nuevacantidad = (int.Parse(cantidad) + int.Parse(vproductos[posicion, 3])).ToString();
+                vproductos[posicion, 3] = nuevacantidad;
+                Console.WriteLine("Stock actualizado correctamente.");
+            }
+            else Console.WriteLine("no existe el codigo");
+        }
+        else Console.WriteLine(" dato nulo");
+    }
+
+    public static void MenuInventario(string[,] vproductos)
+    {
+        string[] datosmenuinventario = { "1.-Listado ", "2.-Agregar ", "3.-Salida " };
+        string opcion = "0";
+        do
+        {
+            opcion = DesplegarMenu("Opciones de Inventarios", datosmenuinventario);
+            if (opcion == null) Console.WriteLine("opcion incorrecta ");
+            else
+            {
+                switch (opcion)
+                {
+                    case "1": Console.WriteLine(MostrarLista(vproductos)); break;
+                    case "2": AgregarStock(vproductos); break;
+                    case "3": Console.WriteLine("Salida del Sistema "); break;
+                    default: Console.WriteLine("No existe esta opcion "); break;
+                }
+            }
+        } while (opcion.CompareTo("3") != 0);
+    }
+
+    public static void MenuPrincipal(string[,] vproductos, string[,] vventas)
+    {
+        string[] datosmenuprincipal = { "1.-Productos ", "2.-Punto de Venta ", "3.- Inventario", "4.-Ventas", "5.-Salida " };
+        string opcion = "0";
+        string idticket;
+        do
+        {
+            idticket = ObtenerUltimoValorVentas(vventas);
+            opcion = DesplegarMenu("Menu de Punto de Venta - Shingu Coffee Shop", datosmenuprincipal);
+            if (opcion == null) Console.WriteLine("opcion incorrecta ");
+            else
+            {
+                switch (opcion)
+                {
+                    case "1": MenuProductos(vproductos); break;
+                    case "2": MenuPuntoVenta(vventas, idticket, vproductos); break;
+                    case "3": MenuInventario(vproductos); break;
+                    case "4": Console.WriteLine(MostrarListaVentas(vventas)); break;
+                    case "5": Console.WriteLine("Salida del Sistema "); break;
+                    default: Console.WriteLine("No existe esta opcion "); break;
+                }
+            }
+        } while (opcion.CompareTo("5") != 0);
+    }
+
+    public static string ObtenerUltimoValorVentas(string[,] ventas)
+    {
+        int ultimaposicion = ObtenerUltimaPosicion(ventas);
+        string ultimoValor = "000";
+        if (ultimaposicion >= 0) ultimoValor = ventas[ultimaposicion, 0];
+        return ultimoValor;
+    }
+
+    public static void Main(string[] args)
+    {
+        productos = CargarProductos();
+        ventas = CrearVenta();
+        MenuPrincipal(productos, ventas);
+    }
+}

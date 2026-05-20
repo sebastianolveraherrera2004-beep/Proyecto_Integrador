@@ -1,0 +1,567 @@
+from datetime import datetime
+
+tamventas = 100
+productos = []
+ventas = []
+
+
+def MostrarMenu(opciones):
+    cadena = ""
+    for info in opciones:
+        cadena = cadena + info + "\n"
+    return cadena
+
+
+def EsNumeroEntero(dato):
+    if dato is None or dato.strip() == "":
+        return False
+    for c in dato:
+        if not c.isdigit():
+            return False
+    return True
+
+
+def EsNumeroDouble(dato):
+    if dato is None or dato.strip() == "":
+        return False
+    punto = False
+    digito = False
+    for c in dato:
+        if c.isdigit():
+            digito = True
+        elif c == "." and not punto:
+            punto = True
+        else:
+            return False
+    return digito
+
+
+def EvaluarNumerico(dato, tipo):
+    valido = False
+    if tipo == 1:
+        valido = EsNumeroEntero(dato)
+    elif tipo == 2:
+        valido = EsNumeroDouble(dato)
+    return valido
+
+
+def Dialogo(texto):
+    print(texto + " : ")
+    return input()
+
+
+def Leer(texto):
+    cadena = Dialogo(texto)
+    if cadena is not None:
+        cadena = cadena.strip()
+        if cadena == "":
+            cadena = None
+    return cadena
+
+
+def LeerValidado(texto_dialogo, tipo_dato):
+    while True:
+        cadena = Dialogo(texto_dialogo)
+        if cadena is not None:
+            cadena = cadena.strip()
+        if cadena is not None and cadena != "" and EvaluarNumerico(cadena, tipo_dato):
+            return cadena
+        print("Dato incorrecto. Intente nuevamente.")
+
+
+def DesplegarMenu(Titulo1, menu):
+    cadena = Titulo1 + "\n\n"
+    cadena = cadena + MostrarMenu(menu)
+    cadena = cadena + "\n Que opcion deseas "
+    return Dialogo(cadena)
+
+
+def RellenarEspacios(dato, tamano):
+    if dato is None:
+        dato = ""
+    return str(dato).ljust(tamano)
+
+
+def Fecha():
+    return datetime.now().strftime("%d-%m-%Y")
+
+
+def IdTicketSiguiente(idticket):
+    num = int(idticket) + 1
+    if num < 10:
+        return "00" + str(num).strip()
+    elif 9 < num < 100:
+        return "0" + str(num).strip()
+    else:
+        return str(num).strip()
+
+
+def ObtenerUltimaPosicion(matriz):
+    ultimaPosicion = -1
+    for i in range(len(matriz)):
+        if matriz[i][0] is not None and matriz[i][0] != "":
+            ultimaPosicion = i
+    return ultimaPosicion
+
+
+def CargarProductos():
+    producto = [
+        ["001", "Espresso", "45", "10", "16"],
+        ["002", "Americano", "50", "10", "16"],
+        ["003", "Cappuccino", "65", "10", "16"],
+        ["004", "Latte", "68", "10", "16"],
+        ["005", "Mocha", "72", "10", "16"],
+        ["006", "Flat White", "70", "10", "16"],
+        ["007", "Caramel Macchiato", "78", "10", "16"],
+        ["008", "Cold Brew", "75", "10", "16"],
+        ["009", "Frappe de Cafe", "82", "10", "16"],
+        ["010", "Affogato", "80", "10", "16"],
+        ["011", "Chocolate Caliente", "60", "10", "16"],
+        ["012", "Te Chai Latte", "70", "10", "16"],
+        ["013", "Matcha Latte", "76", "10", "16"],
+        ["014", "Tisana Frutal", "58", "10", "0"],
+        ["015", "Croissant Mantequilla", "42", "10", "0"],
+        ["016", "Panini Jamon y Queso", "85", "10", "0"],
+        ["017", "Bagel con Queso Crema", "55", "10", "0"],
+        ["018", "Cheesecake Rebanada", "68", "10", "0"],
+        ["019", "Brownie", "48", "10", "0"],
+        ["020", "Galletas Artesanales", "40", "10", "0"]
+    ]
+    return producto
+
+
+def MostrarProducto(vproducto):
+    codigo = RellenarEspacios(vproducto[0], 5)
+    producto = RellenarEspacios(vproducto[1], 30)
+    precio = RellenarEspacios(vproducto[2], 10)
+    cantidad = RellenarEspacios(vproducto[3], 10)
+    iva = RellenarEspacios(vproducto[4], 10) if len(vproducto) > 4 else ""
+    return codigo + producto + precio + cantidad + iva
+
+
+def MostrarLista(vproductos):
+    salida = "Codigo Producto                      Precio    Cantidad  IVA %\n"
+    for ciclo in range(len(vproductos)):
+        vproducto = [vproductos[ciclo][0], vproductos[ciclo][1], vproductos[ciclo][2], vproductos[ciclo][3], vproductos[ciclo][4]]
+        salida = salida + MostrarProducto(vproducto) + "\n"
+    return salida
+
+
+def ExisteProducto(codigo, vproductos):
+    enc = -1
+    pos = 0
+    tam = len(vproductos)
+    for ciclo in range(tam):
+        if vproductos[ciclo][0] == codigo.strip():
+            enc = pos
+        pos += 1
+    return enc
+
+
+def ObtenerIva(codigo, vproductos):
+    pos = ExisteProducto(codigo, vproductos)
+    if pos > -1:
+        return float(vproductos[pos][4])
+    return 0
+
+
+def DescontarStock(mproductos, codigo, cantidad):
+    posp = ExisteProducto(codigo.strip(), mproductos)
+    if posp == -1:
+        return -2
+    stock = int(mproductos[posp][3])
+    if stock == 0:
+        return 0
+    if cantidad > stock:
+        return -1
+    mproductos[posp][3] = str(stock - cantidad)
+    return 1
+
+
+def ModificarProducto(vproductos):
+    info = MostrarLista(vproductos)
+    codigo = Leer(info + "\nIntroduce el codigo del producto a modificar")
+    if codigo is not None:
+        posicion = ExisteProducto(codigo, vproductos)
+        if posicion > -1:
+            vproducto = [vproductos[posicion][0], vproductos[posicion][1], vproductos[posicion][2], vproductos[posicion][3], vproductos[posicion][4]]
+            precio = LeerValidado("\nIntroduce el precio de " + MostrarProducto(vproducto) + " ", 2)
+            vproductos[posicion][2] = precio
+            print("Precio actualizado correctamente.")
+        else:
+            print("no existe el codigo")
+    else:
+        print(" dato nulo")
+
+
+def MenuProductos(vproductos):
+    datosmenuproductos = ["1.-Modificar ", "2.-Listado ", "3.-Salida "]
+    opcion = "0"
+    while True:
+        opcion = DesplegarMenu("Opciones de Productos", datosmenuproductos)
+        if opcion is None:
+            print("opcion incorrecta ")
+        elif opcion == "1":
+            ModificarProducto(vproductos)
+        elif opcion == "2":
+            print(MostrarLista(vproductos))
+        elif opcion == "3":
+            print("Salida del Sistema ")
+        else:
+            print("No existe esta opcion ")
+        if opcion == "3":
+            break
+
+
+def CrearVenta():
+    return [[None for _ in range(5)] for _ in range(tamventas)]
+
+
+def CrearTicket():
+    return [[None for _ in range(4)] for _ in range(20)]
+
+
+def ExisteTicketCodigo(mticket, codigo):
+    enc = -1
+    pos = ObtenerUltimaPosicion(mticket)
+    for ciclo in range(pos + 1):
+        if mticket[ciclo][0] == codigo.strip():
+            enc = ciclo
+            return enc
+    return enc
+
+
+def InsertarProductoTicket(mticket, datos, tamticket):
+    sucedio = True
+    posticket = ObtenerUltimaPosicion(mticket)
+    enc = ExisteTicketCodigo(mticket, datos[0])
+    if posticket < tamticket - 1:
+        if enc > -1:
+            cantidadactual = int(mticket[enc][3])
+            mticket[enc][3] = str(cantidadactual + 1)
+        else:
+            posticket += 1
+            mticket[posticket][0] = datos[0]
+            mticket[posticket][1] = datos[1]
+            mticket[posticket][2] = datos[2]
+            mticket[posticket][3] = datos[3]
+            print("Producto agregado al ticket.")
+    else:
+        sucedio = False
+    return sucedio
+
+
+def TotalProducto(precio, cantidad):
+    total = float(precio) * float(cantidad)
+    return f"{total:.2f}"
+
+
+def MostrarProductoTicket(mticket, pos):
+    codigo = RellenarEspacios(mticket[pos][0], 5)
+    producto = RellenarEspacios(mticket[pos][1], 30)
+    precio = RellenarEspacios(mticket[pos][2], 10)
+    cantidad = RellenarEspacios(mticket[pos][3], 5)
+    totalproducto = RellenarEspacios(TotalProducto(mticket[pos][2], mticket[pos][3]), 10)
+    return codigo + producto + precio + cantidad + totalproducto
+
+
+def MostrarTicket(mticket):
+    salida = "Codigo Producto                      Precio    Cant. Total\n"
+    pos = ObtenerUltimaPosicion(mticket)
+    if pos == -1:
+        return ""
+    for ciclo in range(pos + 1):
+        salida = salida + MostrarProductoTicket(mticket, ciclo) + "\n"
+    return salida
+
+
+def SubTotalTicket(mticket):
+    subtotal = 0
+    pos = ObtenerUltimaPosicion(mticket)
+    for ciclo in range(pos + 1):
+        subtotal = subtotal + float(TotalProducto(mticket[ciclo][2], mticket[ciclo][3]))
+    return subtotal
+
+
+def IvaTicket(mticket, mproductos):
+    ivatotal = 0
+    pos = ObtenerUltimaPosicion(mticket)
+    for ciclo in range(pos + 1):
+        codigo = mticket[ciclo][0]
+        iva = ObtenerIva(codigo, mproductos)
+        if iva != 0:
+            precio = float(mticket[ciclo][2])
+            cantidad = float(mticket[ciclo][3])
+            ivatotal = ivatotal + ((precio * cantidad) * (iva / 100))
+    return ivatotal
+
+
+def TotalTicket(mticket, mproductos):
+    total = SubTotalTicket(mticket)
+    if total > 0:
+        total = IvaTicket(mticket, mproductos) + total
+    return total
+
+
+def MostrarTicketVenta(mticket, idticket, fecha, mproductos):
+    subtotal = f"{SubTotalTicket(mticket):.2f}"
+    iva = f"{IvaTicket(mticket, mproductos):.2f}"
+    total = f"{TotalTicket(mticket, mproductos):.2f}"
+    salida = "Fecha " + fecha + " Ticket No. " + idticket
+    salida = salida + "\n" + MostrarTicket(mticket)
+    salida = salida + "\nEl total sin iva " + subtotal
+    salida = salida + "\nEl iva total es " + iva
+    salida = salida + "\nEl total de la venta fue " + total
+    return salida
+
+
+def MostrarListaProductosVenta(vproductos):
+    salida = "Codigo Producto                      Precio    Cantidad  IVA %\n"
+    for ciclo in range(len(vproductos)):
+        existencia = int(vproductos[ciclo][3])
+        if existencia > 0:
+            vproducto = vproductos[ciclo].copy()
+            salida = salida + MostrarProducto(vproducto) + "\n"
+    return salida
+
+
+def CapturaVentaProducto(mticket, mproductos, idticket, tamticket):
+    info = MostrarListaProductosVenta(mproductos)
+    codigo = Leer(info + "\nIntroduce el codigo del producto")
+    if codigo is not None:
+        posp = ExisteProducto(codigo.strip(), mproductos)
+        if posp > -1:
+            resultado = DescontarStock(mproductos, codigo.strip(), 1)
+            if resultado == 1:
+                venta = [mproductos[posp][0], mproductos[posp][1], mproductos[posp][2], "1"]
+                if not InsertarProductoTicket(mticket, venta, tamticket):
+                    print("el Arreglo esta lleno \n")
+                    DevolverProductoInventario(mproductos, codigo.strip(), 1)
+            elif resultado == -1:
+                print("la cantidad es mayor al stock disponible")
+            elif resultado == 0:
+                print("no hay productos para venta")
+            elif resultado == -2:
+                print("el codigo no existe no se puede agregar")
+        else:
+            print("el codigo no existe no se puede agregar\n")
+    else:
+        print("dato nulo\n")
+
+
+def DevolverProductoInventario(mproductos, codigo, cantidad):
+    posproducto = ExisteProducto(codigo, mproductos)
+    if posproducto > -1:
+        nuevacantidad = int(mproductos[posproducto][3]) + cantidad
+        mproductos[posproducto][3] = str(nuevacantidad)
+
+
+def RemoverProductoTicket(mticket, pos):
+    tam = ObtenerUltimaPosicion(mticket)
+    if tam > pos:
+        for i in range(pos, tam):
+            mticket[i] = mticket[i + 1]
+        mticket[tam] = [None for _ in range(4)]
+    else:
+        mticket[pos] = [None for _ in range(4)]
+
+
+def EliminarProductoTicket(mticket, pos):
+    cantidad = int(mticket[pos][3])
+    if cantidad > 1:
+        mticket[pos][3] = str(cantidad - 1)
+    else:
+        RemoverProductoTicket(mticket, pos)
+
+
+def Eliminar(mticket, mproductos):
+    info = MostrarTicket(mticket)
+    if info.strip() == "":
+        print("El ticket esta vacio")
+        return
+    codigo = Leer(info + "\nIntroduce el codigo del producto")
+    if codigo is not None:
+        pos = ExisteTicketCodigo(mticket, codigo)
+        if pos > -1:
+            DevolverProductoInventario(mproductos, codigo.strip(), 1)
+            EliminarProductoTicket(mticket, pos)
+            print("Producto eliminado del ticket.")
+        else:
+            print("El codigo no existe en el ticket.")
+    else:
+        print("dato nulo")
+
+
+def AgregarProductoAVenta(mticket, mventa, idticket):
+    posventas = ObtenerUltimaPosicion(mventa)
+    posticket = ObtenerUltimaPosicion(mticket)
+    for i in range(posticket + 1):
+        if mticket[i][0] is not None:
+            posventas += 1
+            mventa[posventas][0] = idticket
+            mventa[posventas][1] = mticket[i][0]
+            mventa[posventas][2] = mticket[i][1]
+            mventa[posventas][3] = mticket[i][2]
+            mventa[posventas][4] = mticket[i][3]
+
+
+def Pagar(idticket, mventa, mticket):
+    posventas = ObtenerUltimaPosicion(mventa)
+    post = ObtenerUltimaPosicion(mticket)
+    if post == -1:
+        print("No hay productos en el ticket para pagar.")
+        return
+    if (posventas + post) < tamventas:
+        AgregarProductoAVenta(mticket, mventa, idticket)
+    else:
+        print("Desbordamiento de Memoria de ventas")
+
+
+def DevolucionTicket(mticket, mproductos):
+    posmticket = ObtenerUltimaPosicion(mticket)
+    for pos in range(posmticket + 1):
+        codigo = mticket[pos][0]
+        cantidad = int(mticket[pos][3])
+        DevolverProductoInventario(mproductos, codigo.strip(), cantidad)
+
+
+def CancelarVenta(mticket, mproductos):
+    DevolucionTicket(mticket, mproductos)
+    for i in range(len(mticket)):
+        for j in range(len(mticket[i])):
+            mticket[i][j] = None
+    print("Venta cancelada. Productos devueltos al inventario y ticket limpiado.")
+
+
+def MenuPuntoVenta(ventas, idticket, productos):
+    pago = False
+    tamticket = 50
+    Vticket = [[None for _ in range(4)] for _ in range(tamticket)]
+    idticket = IdTicketSiguiente(idticket)
+    fechadia = Fecha()
+    opcion = ""
+    while opcion != "5":
+        membrete = "Fecha del Dia " + fechadia + " Ticket No " + idticket
+        membrete = membrete + "\n-----------------------------------------------------\n"
+        Tickettexto = MostrarTicket(Vticket).strip()
+        if Tickettexto != "":
+            membrete = membrete + "\n" + Tickettexto + "\n"
+        datosmenu = ["1.-Agregar  ", "2.-Eliminar ", "3.-Listado ", "4.-Pagar ", "5.-Salida "]
+        opcion = DesplegarMenu(membrete + "\n Menu de Punto de Venta", datosmenu)
+        if opcion is None:
+            print("dato incorrecto introducido")
+        elif opcion == "1":
+            CapturaVentaProducto(Vticket, productos, idticket, tamticket)
+        elif opcion == "2":
+            Eliminar(Vticket, productos)
+        elif opcion == "3":
+            if ObtenerUltimaPosicion(Vticket) > -1:
+                print(MostrarTicket(Vticket))
+            else:
+                print("El ticket esta vacio.")
+        elif opcion == "4":
+            if ObtenerUltimaPosicion(Vticket) > -1:
+                print(MostrarTicketVenta(Vticket, idticket, fechadia, productos).strip())
+                Pagar(idticket, ventas, Vticket)
+                pago = True
+                opcion = "5"
+            else:
+                print("No hay productos en el ticket para pagar.")
+        elif opcion == "5":
+            print("Salida del Ventas ")
+            if not pago and ObtenerUltimaPosicion(Vticket) > -1:
+                CancelarVenta(Vticket, productos)
+        else:
+            print("No existe esta opcion")
+
+
+def MostrarVenta(venta):
+    idticket = RellenarEspacios(venta[0], 6)
+    codigo = RellenarEspacios(venta[1], 5)
+    producto = RellenarEspacios(venta[2], 30)
+    precio = RellenarEspacios(venta[3], 10)
+    cantidad = RellenarEspacios(venta[4], 10)
+    return idticket + codigo + producto + precio + cantidad
+
+
+def MostrarListaVentas(ventas):
+    posventas = ObtenerUltimaPosicion(ventas)
+    salida = "ID    Codigo Producto                      Precio    Cantidad\n"
+    if posventas == -1:
+        return "No hay ventas registradas.\n"
+    for ciclo in range(posventas + 1):
+        venta = [ventas[ciclo][0], ventas[ciclo][1], ventas[ciclo][2], ventas[ciclo][3], ventas[ciclo][4]]
+        salida = salida + MostrarVenta(venta) + "\n"
+    return salida
+
+
+def AgregarStock(vproductos):
+    info = MostrarLista(vproductos)
+    codigo = Leer(info + "\nIntroduce el codigo del producto a modificar")
+    if codigo is not None:
+        posicion = ExisteProducto(codigo, vproductos)
+        if posicion > -1:
+            vproducto = [vproductos[posicion][0], vproductos[posicion][1], vproductos[posicion][2], vproductos[posicion][3], vproductos[posicion][4]]
+            cantidad = LeerValidado("\nIntroduce la Cantidad de Stock a Agregar " + MostrarProducto(vproducto), 1)
+            nuevacantidad = str(int(cantidad) + int(vproductos[posicion][3]))
+            vproductos[posicion][3] = nuevacantidad
+            print("Stock actualizado correctamente.")
+        else:
+            print("no existe el codigo")
+    else:
+        print(" dato nulo")
+
+
+def MenuInventario(vproductos):
+    datosmenuinventario = ["1.-Listado ", "2.-Agregar ", "3.-Salida "]
+    opcion = "0"
+    while True:
+        opcion = DesplegarMenu("Opciones de Inventarios", datosmenuinventario)
+        if opcion is None:
+            print("opcion incorrecta ")
+        elif opcion == "1":
+            print(MostrarLista(vproductos))
+        elif opcion == "2":
+            AgregarStock(vproductos)
+        elif opcion == "3":
+            print("Salida del Sistema ")
+        else:
+            print("No existe esta opcion ")
+        if opcion == "3":
+            break
+
+
+def MenuPrincipal(vproductos, vventas):
+    datosmenuprincipal = ["1.-Productos ", "2.-Punto de Venta ", "3.- Inventario", "4.-Ventas", "5.-Salida "]
+    opcion = "0"
+    while opcion != "5":
+        idticket = ObtenerUltimoValorVentas(vventas)
+        opcion = DesplegarMenu("Menu de Punto de Venta - Shingu Coffee Shop", datosmenuprincipal)
+        if opcion is None:
+            print("opcion incorrecta ")
+        elif opcion == "1":
+            MenuProductos(vproductos)
+        elif opcion == "2":
+            MenuPuntoVenta(vventas, idticket, vproductos)
+        elif opcion == "3":
+            MenuInventario(vproductos)
+        elif opcion == "4":
+            print(MostrarListaVentas(vventas))
+        elif opcion == "5":
+            print("Salida del Sistema ")
+        else:
+            print("No existe esta opcion ")
+
+
+def ObtenerUltimoValorVentas(ventas):
+    ultimaposicion = ObtenerUltimaPosicion(ventas)
+    ultimoValor = "000"
+    if ultimaposicion >= 0:
+        ultimoValor = ventas[ultimaposicion][0]
+    return ultimoValor
+
+
+if __name__ == "__main__":
+    productos = CargarProductos()
+    ventas = CrearVenta()
+    MenuPrincipal(productos, ventas)
